@@ -14,12 +14,13 @@ package getter
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/url"
 	"os/exec"
 	"regexp"
 	"syscall"
 
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/go-cleanhttp"
 )
 
 // Getter defines the interface that schemes must implement to download
@@ -112,6 +113,19 @@ func GetFile(dst, src string, opts ...ClientOption) error {
 		Dst:     dst,
 		Dir:     false,
 		Options: opts,
+	}).Get()
+}
+
+// GetFromReader uses provided reader to get file content and stores
+// it into the path specified by dst.
+func GetFromReader(dst, src string, size int64, reader io.ReadCloser, opts ...ClientOption) error {
+	return (&Client{
+		Rc:          reader,
+		RcTotalSize: size,
+		Src:         src,
+		Dst:         dst,
+		Options:     opts,
+		Mode:        ClientModeAny,
 	}).Get()
 }
 

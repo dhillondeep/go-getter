@@ -3,6 +3,7 @@ package getter
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -10,7 +11,7 @@ import (
 	"strings"
 
 	urlhelper "github.com/hashicorp/go-getter/helper/url"
-	safetemp "github.com/hashicorp/go-safetemp"
+	"github.com/hashicorp/go-safetemp"
 )
 
 // Client is a client for downloading things.
@@ -19,7 +20,7 @@ import (
 // Using a client directly allows more fine-grained control over how downloading
 // is done, as well as customizing the protocols supported.
 type Client struct {
- 	// Ctx for cancellation
+	// Ctx for cancellation
 	Ctx context.Context
 
 	// Src is the source URL to get.
@@ -34,6 +35,12 @@ type Client struct {
 	Src string
 	Dst string
 	Pwd string
+
+	// Rc is a reader with file content
+	//
+	// RcTotalSize is the total size for the file content
+	Rc          io.ReadCloser
+	RcTotalSize int64
 
 	// Mode is the method of download the client will use. See ClientMode
 	// for documentation.
